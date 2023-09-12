@@ -1,17 +1,19 @@
-use std::f32::consts::PI;
+use std::{f32::consts::PI, time::Duration};
 
 use crate::{
-    utils::{calc_rotatio_angle, get_rand_unit_vec2},
+    utils::{calc_rotatio_angle, get_rand_unit_vec2, get_steering_force},
     *,
 };
 use bevy::{
-    math::vec3,
+    math::{vec2, vec3},
     prelude::{
-        AssetServer, Color, Commands, Component, Plugin, Quat, Query, Res, Startup, Transform,
-        Update, Vec2, Vec3, With,
+        AssetServer, Color, Commands, Component, IntoSystemConfigs, Plugin, Quat, Query, Res,
+        Startup, Transform, Update, Vec2, Vec3, With,
     },
     sprite::{Sprite, SpriteBundle},
+    time::common_conditions::on_timer,
 };
+use rand::{thread_rng, Rng};
 pub struct AntPlugin;
 
 #[derive(Component)]
@@ -24,7 +26,11 @@ pub struct Acceleration(Vec2);
 impl Plugin for AntPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.add_systems(Startup, setup)
-            .add_systems(Update, update_position);
+            .add_systems(
+                Update,
+                check_wall_collision.run_if(on_timer(Duration::from_secs_f32(0.1))),
+            )
+            .add_systems(Update, update_position.after(check_wall_collision));
     }
 }
 
@@ -51,7 +57,7 @@ fn setup(mut commands: Commands, assert_server: Res<AssetServer>) {
 fn check_wall_collision(
     mut ant_query: Query<(&Transform, &Velocity, &mut Acceleration), With<Ant>>,
 ) {
-    for (mut transform, velocity, mut acceleration) in ant_query.iter_mut() {
+    for (transform, velocity, mut acceleration) in ant_query.iter_mut() {
         let border = 20.0;
         let top_left = (-W / 2.0, H / 2.0);
         let bottom_right = (W / 2.0, -H / 2.0);
@@ -60,7 +66,10 @@ fn check_wall_collision(
         let y_bound = transform.translation.y >= top_left.1 - border
             || transform.translation.y < bottom_right.1 + border;
         if x_bound || y_bound {
-            
+            let mut rng = thread_rng();
+            let target = vec2(rng.gen_range(-200.0..200.0), rng.gen_range(-200.0..200.0));
+            acceleration.0 +=
+                get_steering_force(target, transform.translation.truncate(), velocity.0);
         }
     }
 }

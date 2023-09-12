@@ -26,3 +26,10 @@ pub fn calc_rotatio_angle(v1: &Vec3, v2: &Vec3) -> f32 {
         angle_rad
     }
 }
+
+/// 转向力
+pub fn get_steering_force(target: Vec2, current: Vec2, velocity: Vec2) -> Vec2 {
+    let desired = target - current;
+    let steering = desired - velocity;
+    steering * 0.5
+}
