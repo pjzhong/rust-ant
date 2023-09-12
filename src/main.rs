@@ -4,7 +4,7 @@ use bevy::{
     prelude::*,
 };
 
-use ants::*;
+use ants::{ant::AntPlugin, *};
 use bevy_pancam::PanCamPlugin;
 
 #[derive(Component)]
@@ -34,6 +34,7 @@ fn main() {
         )))
         .add_systems(Update, bevy::window::close_on_esc)
         .add_systems(Startup, setup)
+        .add_plugins(AntPlugin)
         .run();
 }
 
