@@ -1,4 +1,4 @@
-use std::{f32::consts::PI, time::Duration};
+use std::{f32::consts::PI, time::Duration, slice::Windows};
 
 use crate::{
     utils::{calc_rotatio_angle, get_rand_unit_vec2, get_steering_force},
@@ -11,7 +11,7 @@ use bevy::{
         Startup, Transform, Update, Vec2, Vec3, With,
     },
     sprite::{Sprite, SpriteBundle},
-    time::common_conditions::on_timer,
+    time::common_conditions::on_timer, window::Window,
 };
 use rand::{thread_rng, Rng};
 pub struct AntPlugin;
@@ -56,11 +56,15 @@ fn setup(mut commands: Commands, assert_server: Res<AssetServer>) {
 
 fn check_wall_collision(
     mut ant_query: Query<(&Transform, &Velocity, &mut Acceleration), With<Ant>>,
+    window: Query<&Window>,
 ) {
+    let window = window.single();
+    let (w, h) = (window.width(), window.height());
+
     for (transform, velocity, mut acceleration) in ant_query.iter_mut() {
         let border = 20.0;
-        let top_left = (-W / 2.0, H / 2.0);
-        let bottom_right = (W / 2.0, -H / 2.0);
+        let top_left = (-w / 2.0, h / 2.0);
+        let bottom_right = (w / 2.0, -h / 2.0);
         let x_bound = transform.translation.x < top_left.0 + border
             || transform.translation.x >= bottom_right.0 - border;
         let y_bound = transform.translation.y >= top_left.1 - border
@@ -89,6 +93,7 @@ fn update_position(
         }
 
         acceleration.0 = Vec2::ZERO;
+        //调整图像旋转角度
         transform.rotation =
             Quat::from_rotation_z(calc_rotatio_angle(&old_pos, &transform.translation) + PI / 2.0)
     }

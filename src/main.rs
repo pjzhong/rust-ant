@@ -17,7 +17,7 @@ fn main() {
                 .set(ImagePlugin::default_nearest())
                 .set(WindowPlugin {
                     primary_window: Some(Window {
-                        resizable: false,
+                        resizable: true,
                         focused: true,
                         resolution: (W, H).into(),
                         title: "Ants".to_string(),
