@@ -1,4 +1,4 @@
-use std::{f32::consts::PI, time::Duration, slice::Windows};
+use std::{f32::consts::PI, time::Duration};
 
 use crate::{
     utils::{calc_rotatio_angle, get_rand_unit_vec2, get_steering_force},
@@ -7,15 +7,23 @@ use crate::{
 use bevy::{
     math::{vec2, vec3},
     prelude::{
-        AssetServer, Color, Commands, Component, IntoSystemConfigs, Plugin, Quat, Query, Res,
-        Startup, Transform, Update, Vec2, Vec3, With,
+        AssetServer, Color, Commands, Component, Handle, Image, IntoSystemConfigs, Plugin, Quat,
+        Query, Res, Startup, Transform, Update, Vec2, Vec3, With,
     },
     sprite::{Sprite, SpriteBundle},
-    time::common_conditions::on_timer, window::Window,
+    time::common_conditions::on_timer,
+    window::Window,
 };
 use rand::{thread_rng, Rng};
 pub struct AntPlugin;
 
+pub enum AntTask {
+    FindFood,
+    FindHome,
+}
+
+#[derive(Component)]
+pub struct CurrentTask(pub AntTask);
 #[derive(Component)]
 pub struct Ant;
 #[derive(Component)]
@@ -30,7 +38,15 @@ impl Plugin for AntPlugin {
                 Update,
                 check_wall_collision.run_if(on_timer(Duration::from_secs_f32(0.1))),
             )
-            .add_systems(Update, update_position.after(check_wall_collision));
+            .add_systems(Update, update_position.after(check_wall_collision))
+            .add_systems(
+                Update,
+                drop_pheronone.run_if(on_timer(Duration::from_secs_f32(ANT_PH_DROP_INTERVAL))),
+            )
+            .add_systems(
+                Update,
+                check_home_food_collisions.run_if(on_timer(Duration::from_secs_f32(0.1))),
+            );
     }
 }
 
@@ -48,6 +64,7 @@ fn setup(mut commands: Commands, assert_server: Res<AssetServer>) {
                 ..Default::default()
             },
             Ant,
+            CurrentTask(AntTask::FindFood),
             Velocity(get_rand_unit_vec2()),
             Acceleration(Vec2::ZERO),
         ));
@@ -76,6 +93,48 @@ fn check_wall_collision(
                 get_steering_force(target, transform.translation.truncate(), velocity.0);
         }
     }
+}
+
+fn check_home_food_collisions(
+    mut ant_query: Query<
+        (
+            &Transform,
+            &mut Sprite,
+            &mut Velocity,
+            &mut CurrentTask,
+            &mut Handle<Image>,
+        ),
+        With<Ant>,
+    >,
+    assert_server: Res<AssetServer>,
+) {
+    for (transform, mut sprite, mut velocity, mut ant_task, mut image_handle) in
+        ant_query.iter_mut()
+    {
+        let dist_to_home =
+            transform
+                .translation
+                .distance_squared(vec3(HOME_LOCATION.0, HOME_LOCATION.1, 0.0));
+        if dist_to_home < HOME_RADIUS * HOME_RADIUS {
+            ant_task.0 = AntTask::FindFood;
+            *image_handle = assert_server.load(SPRITE_ANT);
+            sprite.color = Color::rgb(1.0, 1.0, 2.5);
+        }
+
+        let dist_to_food =
+            transform
+                .translation
+                .distance_squared(vec3(FOOD_LOCATION.0, FOOD_LOCATION.1, 0.0));
+        if dist_to_food <= FOOD_PICKUP_RADIUS * FOOD_PICKUP_RADIUS {
+            ant_task.0 = AntTask::FindHome;
+            *image_handle = assert_server.load(SPRITE_ANT_WITH_FOOD);
+            sprite.color = Color::rgb(1.0, 2.0, 1.0);
+        }
+    }
+}
+
+fn drop_pheronone() {
+    //1.蚂蚁经过，留下信号
 }
 
 fn update_position(

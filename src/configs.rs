@@ -5,13 +5,13 @@ pub const H: f32 = 1080.0;
 pub const BG_COLOR: (u8, u8, u8) = (0, 0, 0);
 
 // Ant Colony
-pub const HOME_LOCATION: (f32, f32) = (759.0, -350.0);
+pub const HOME_LOCATION: (f32, f32) = (379.5, -175.0);
 pub const HOME_SPRITE_SCALE: f32 = 2.5;
 pub const HOME_RADIUS: f32 = 30.0;
 
 // Food
 // pub const FOOD_LOCATION: (f32, f32) = (-400.0, 300.0);
-pub const FOOD_LOCATION: (f32, f32) = (-750.0, 400.0);
+pub const FOOD_LOCATION: (f32, f32) = (-379.5, 00.0);
 pub const FOOD_PICKUP_RADIUS: f32 = 30.0;
 pub const FOOD_SPRITE_SCALE: f32 = 2.0;
 
@@ -37,3 +37,12 @@ pub const ANT_PH_SCAN_RADIUS_INCREMENT: f32 = 0.1;
 pub const ANT_PH_SCAN_RADIUS_SCALE: f32 = 1.8;
 pub const ANT_STEERING_FORCE_FACTOR: f32 = 0.7;
 pub const ANT_TARGET_AUTO_PULL_RADIUS: f32 = 100.0;
+
+// Pheromones
+pub const MAX_PHEROMONE_STRENGTH: f32 = 500.0;
+pub const PH_DECAY_RATE: f32 = 0.08;
+pub const PH_DECAY_INTERVAL: f32 = 0.1;
+pub const PH_IMG_UPDATE_SEC: f32 = 0.1;
+pub const PH_GRID_VIZ_MIN_STRENGTH: u8 = 1;
+pub const PH_UNIT_GRID_SIZE: usize = 5;
+pub const PH_KD_TREE_UPDATE_INTERVAL: f32 = 2.0;
