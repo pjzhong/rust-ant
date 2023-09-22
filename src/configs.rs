@@ -46,3 +46,7 @@ pub const PH_IMG_UPDATE_SEC: f32 = 0.1;
 pub const PH_GRID_VIZ_MIN_STRENGTH: u8 = 1;
 pub const PH_UNIT_GRID_SIZE: usize = 5;
 pub const PH_KD_TREE_UPDATE_INTERVAL: f32 = 2.0;
+
+pub const PH_COLOR_TO_FOOD: (u8, u8, u8) = (2, 79, 2);
+pub const PH_COLOR_TO_HOME: (u8, u8, u8) = (200, 81, 112);
+pub const PH_CACHE_GRID_SIZE: i32 = 10;

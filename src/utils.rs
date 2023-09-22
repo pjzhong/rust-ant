@@ -33,3 +33,16 @@ pub fn get_steering_force(target: Vec2, current: Vec2, velocity: Vec2) -> Vec2 {
     let steering = desired - velocity;
     steering * 0.5
 }
+
+/// 计算中值
+pub fn calc_weighted_midpoint(points: &[(i32, i32, f32)]) -> Vec2 {
+    let total_weight: f32 = points.iter().map(|point| point.2).sum();
+
+    let weighted_sum_x: f32 = points.iter().map(|point| point.0 as f32 * point.2).sum();
+    let weighted_sum_y: f32 = points.iter().map(|point| point.1 as f32 * point.2).sum();
+
+    let weighted_midpoint_x = weighted_sum_x / total_weight;
+    let weighted_midpoint_y = weighted_sum_y / total_weight;
+
+    vec2(weighted_midpoint_x, weighted_midpoint_y)
+}

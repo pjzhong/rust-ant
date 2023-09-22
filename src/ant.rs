@@ -18,12 +18,13 @@ use bevy::{
 use rand::{thread_rng, Rng};
 pub struct AntPlugin;
 
+#[derive(Debug)]
 pub enum AntTask {
     FindFood,
     FindHome,
 }
 
-#[derive(Component)]
+#[derive(Component, Debug)]
 pub struct CurrentTask(pub AntTask);
 #[derive(Component)]
 pub struct Ant;
@@ -110,6 +111,8 @@ fn check_wall_collision(
 
 fn periodic_directio_update(
     mut ant_query: Query<(&mut Acceleration, &Transform, &CurrentTask, &Velocity), With<Ant>>,
+    mut pheromones: ResMut<Pheromones>,
+    scan_radius: Res<AntScanRadius>,
 ) {
     for (mut acceleration, transform, current_task, velocity) in ant_query.iter_mut() {
         let target = match current_task.0 {
@@ -139,17 +142,29 @@ fn periodic_directio_update(
             }
         };
 
-        // match target {
-        //     None => {
-        //         acceleration.0 += get_rand_unit_vec2() * 0.2;
-        //     }
-        //     Some(target) => {
-        //         let steering_force =
-        //             get_steering_force(target, transform.translation.truncate(), velocity.0);
-        //         let mut rng = rand::thread_rng();
-        //         acceleration.0 += steering_force * rng.gen_range(0.4..=ANT_STEERING_FORCE_FACTOR);
-        //     }
-        // }
+        let _target = match target {
+            None => match current_task.0 {
+                AntTask::FindFood => pheromones
+                    .to_food
+                    .get_steer_target(&transform.translation, scan_radius.0),
+                AntTask::FindHome => pheromones
+                    .to_home
+                    .get_steer_target(&transform.translation, scan_radius.0),
+            },
+            a @ Some(_) => a,
+        };
+
+        match target {
+            None => {
+                acceleration.0 += get_rand_unit_vec2() * 0.2;
+            }
+            Some(target) => {
+                let steering_force =
+                    get_steering_force(target, transform.translation.truncate(), velocity.0);
+                let mut rng = rand::thread_rng();
+                acceleration.0 += steering_force * rng.gen_range(0.4..=ANT_STEERING_FORCE_FACTOR);
+            }
+        }
     }
 }
 
@@ -166,20 +181,18 @@ fn check_home_food_collisions(
     >,
     assert_server: Res<AssetServer>,
 ) {
-    for (transform, mut sprite, mut velocity, mut ant_task, mut image_handle) in
-        ant_query.iter_mut()
-    {
+    for (transform, mut sprite, _velocity, mut ant_task, mut image_handle) in ant_query.iter_mut() {
         let dist_to_home =
             transform
                 .translation
                 .distance_squared(vec3(HOME_LOCATION.0, HOME_LOCATION.1, 0.0));
         if dist_to_home < HOME_RADIUS * HOME_RADIUS {
-            match ant_task.0 {
-                AntTask::FindFood => {}
-                AntTask::FindHome => {
-                    velocity.0 *= -1.0;
-                }
-            };
+            // match ant_task.0 {
+            //     AntTask::FindFood => {}
+            //     AntTask::FindHome => {
+            //         velocity.0 *= -1.0;
+            //     }
+            // };
             ant_task.0 = AntTask::FindFood;
             *image_handle = assert_server.load(SPRITE_ANT);
             sprite.color = Color::rgb(1.0, 1.0, 2.5);
@@ -190,12 +203,12 @@ fn check_home_food_collisions(
                 .translation
                 .distance_squared(vec3(FOOD_LOCATION.0, FOOD_LOCATION.1, 0.0));
         if dist_to_food <= FOOD_PICKUP_RADIUS * FOOD_PICKUP_RADIUS {
-            match ant_task.0 {
-                AntTask::FindFood => {
-                    velocity.0 *= -1.0;
-                }
-                AntTask::FindHome => {}
-            };
+            // match ant_task.0 {
+            //     AntTask::FindFood => {
+            //         velocity.0 *= -1.0;
+            //     }
+            //     AntTask::FindHome => {}
+            // };
 
             ant_task.0 = AntTask::FindHome;
             *image_handle = assert_server.load(SPRITE_ANT_WITH_FOOD);
@@ -212,7 +225,6 @@ fn drop_pheronone(
     for (transform, ant_task, ph_strength) in ant_query.iter_mut() {
         let x = transform.translation.x as i32;
         let y = transform.translation.y as i32;
-
         match ant_task.0 {
             AntTask::FindFood => pheronones.to_home.emit_signal(&(x, y), ph_strength.0),
             AntTask::FindHome => pheronones.to_food.emit_signal(&(x, y), ph_strength.0),

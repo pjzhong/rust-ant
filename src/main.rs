@@ -4,7 +4,7 @@ use bevy::{
     prelude::*,
 };
 
-use ants::{ant::AntPlugin, *};
+use ants::{ant::AntPlugin, pheromone::PheromonePlugin, *};
 use bevy_pancam::PanCamPlugin;
 
 #[derive(Component)]
@@ -27,8 +27,9 @@ fn main() {
                 }),
         )
         .add_plugins(LogDiagnosticsPlugin::default())
-        .add_plugins(FrameTimeDiagnosticsPlugin::default())
-        .add_plugins(PanCamPlugin::default())
+        .add_plugins(FrameTimeDiagnosticsPlugin)
+        .add_plugins(PanCamPlugin)
+        .add_plugins(PheromonePlugin)
         .insert_resource(ClearColor(Color::rgba_u8(
             BG_COLOR.0, BG_COLOR.1, BG_COLOR.2, 0,
         )))
