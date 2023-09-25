@@ -115,6 +115,7 @@ fn periodic_directio_update(
     scan_radius: Res<AntScanRadius>,
 ) {
     for (mut acceleration, transform, current_task, velocity) in ant_query.iter_mut() {
+        let cur_pos = transform.translation;
         let target = match current_task.0 {
             AntTask::FindFood => {
                 let dist_to_food = transform.translation.distance_squared(vec3(
@@ -144,12 +145,8 @@ fn periodic_directio_update(
 
         let _target = match target {
             None => match current_task.0 {
-                AntTask::FindFood => pheromones
-                    .to_food
-                    .get_steer_target(&transform.translation, scan_radius.0),
-                AntTask::FindHome => pheromones
-                    .to_home
-                    .get_steer_target(&transform.translation, scan_radius.0),
+                AntTask::FindFood => pheromones.to_food.get_steer_target(&cur_pos, scan_radius.0),
+                AntTask::FindHome => pheromones.to_home.get_steer_target(&cur_pos, scan_radius.0),
             },
             a @ Some(_) => a,
         };
@@ -181,18 +178,20 @@ fn check_home_food_collisions(
     >,
     assert_server: Res<AssetServer>,
 ) {
-    for (transform, mut sprite, _velocity, mut ant_task, mut image_handle) in ant_query.iter_mut() {
+    for (transform, mut sprite, mut velocity, mut ant_task, mut image_handle) in
+        ant_query.iter_mut()
+    {
         let dist_to_home =
             transform
                 .translation
                 .distance_squared(vec3(HOME_LOCATION.0, HOME_LOCATION.1, 0.0));
         if dist_to_home < HOME_RADIUS * HOME_RADIUS {
-            // match ant_task.0 {
-            //     AntTask::FindFood => {}
-            //     AntTask::FindHome => {
-            //         velocity.0 *= -1.0;
-            //     }
-            // };
+            match ant_task.0 {
+                AntTask::FindFood => {}
+                AntTask::FindHome => {
+                    velocity.0 *= -1.0;
+                }
+            };
             ant_task.0 = AntTask::FindFood;
             *image_handle = assert_server.load(SPRITE_ANT);
             sprite.color = Color::rgb(1.0, 1.0, 2.5);
@@ -203,12 +202,12 @@ fn check_home_food_collisions(
                 .translation
                 .distance_squared(vec3(FOOD_LOCATION.0, FOOD_LOCATION.1, 0.0));
         if dist_to_food <= FOOD_PICKUP_RADIUS * FOOD_PICKUP_RADIUS {
-            // match ant_task.0 {
-            //     AntTask::FindFood => {
-            //         velocity.0 *= -1.0;
-            //     }
-            //     AntTask::FindHome => {}
-            // };
+            match ant_task.0 {
+                AntTask::FindFood => {
+                    velocity.0 *= -1.0;
+                }
+                AntTask::FindHome => {}
+            };
 
             ant_task.0 = AntTask::FindHome;
             *image_handle = assert_server.load(SPRITE_ANT_WITH_FOOD);

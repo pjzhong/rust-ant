@@ -1,16 +1,19 @@
 use std::f32::consts::PI;
 
 use bevy::{
-    math::vec2,
+    math::{vec2, vec3},
     prelude::{Vec2, Vec3},
 };
 use rand::{thread_rng, Rng};
 
-use crate::*;
-
 pub fn get_rand_unit_vec2() -> Vec2 {
+    let rand_vec3 = get_rand_unit_vec3();
+    vec2(rand_vec3.x, rand_vec3.y)
+}
+
+pub fn get_rand_unit_vec3() -> Vec3 {
     let mut rng = thread_rng();
-    vec2(rng.gen_range(-W..W), rng.gen_range(-H..H))
+    vec3(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0), 0.0).normalize()
 }
 
 pub fn calc_rotatio_angle(v1: &Vec3, v2: &Vec3) -> f32 {

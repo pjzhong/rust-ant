@@ -5,13 +5,13 @@ pub const H: f32 = 1080.0;
 pub const BG_COLOR: (u8, u8, u8) = (0, 0, 0);
 
 // Ant Colony
-pub const HOME_LOCATION: (f32, f32) = (379.5, -175.0);
+pub const HOME_LOCATION: (f32, f32) = (759.0, -350.0);
 pub const HOME_SPRITE_SCALE: f32 = 2.5;
 pub const HOME_RADIUS: f32 = 30.0;
 
 // Food
-// pub const FOOD_LOCATION: (f32, f32) = (-400.0, 300.0);
-pub const FOOD_LOCATION: (f32, f32) = (-379.5, 00.0);
+pub const FOOD_LOCATION: (f32, f32) = (-400.0, 300.0);
+//pub const FOOD_LOCATION: (f32, f32) = (-379.5, 00.0);
 pub const FOOD_PICKUP_RADIUS: f32 = 30.0;
 pub const FOOD_SPRITE_SCALE: f32 = 2.0;
 
@@ -22,7 +22,7 @@ pub const SPRITE_ANT_COLONY: &str = "nest.png";
 pub const SPRITE_FOOD: &str = "food.png";
 
 // Ants
-pub const NUM_ANTS: u32 = 5000;
+pub const NUM_ANTS: u32 = 500;
 pub const ANT_SPEED: f32 = 1.5;
 pub const ANT_DIRECTION_RANDOMNESS_DEG: f32 = 300.0;
 pub const ANT_DIRECTION_UPDATE_INTERVAL: f32 = 0.5;

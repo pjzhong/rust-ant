@@ -106,6 +106,10 @@ impl WorldGrid {
     pub fn decay_signals(&mut self) {
         self.signals.decay_values(PH_DECAY_RATE);
     }
+
+    pub fn drop_zero_signals(&mut self) {
+        self.signals.drop_zero_values();
+    }
 }
 
 pub struct DecayGrid {

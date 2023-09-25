@@ -1,17 +1,26 @@
 use std::{collections::HashMap, time::Duration};
 
 use bevy::{
-    prelude::{Commands, IntoSystemConfigs, Plugin, ResMut, Resource, Startup, Update},
+    prelude::{
+        Assets, Commands, Component, Handle, Image, IntoSystemConfigs, Plugin, Query, Res, ResMut,
+        Resource, Startup, Transform, Update, Vec3, With,
+    },
+    sprite::SpriteBundle,
     time::common_conditions::on_timer,
 };
 
 use crate::{
     grids::WorldGrid, FOOD_LOCATION, HOME_LOCATION, PH_COLOR_TO_FOOD, PH_COLOR_TO_HOME,
-    PH_DECAY_INTERVAL, PH_KD_TREE_UPDATE_INTERVAL,
+    PH_DECAY_INTERVAL, PH_IMG_UPDATE_SEC, PH_KD_TREE_UPDATE_INTERVAL,
 };
+
+use crate::PH_UNIT_GRID_SIZE;
 
 #[derive(Default)]
 pub struct PheromonePlugin;
+
+#[derive(Component)]
+struct PheromoneImageRender;
 
 impl Plugin for PheromonePlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
@@ -22,9 +31,17 @@ impl Plugin for PheromonePlugin {
             )
             .add_systems(
                 Update,
+                clear_zero_signals.run_if(on_timer(Duration::from_secs_f32(2.0))),
+            )
+            .add_systems(
+                Update,
                 update_kd_tree.run_if(on_timer(Duration::from_secs_f32(
                     PH_KD_TREE_UPDATE_INTERVAL,
                 ))),
+            )
+            .add_systems(
+                Update,
+                pheromone_image_update.run_if(on_timer(Duration::from_secs_f32(PH_IMG_UPDATE_SEC))),
             )
             .insert_resource(Pheromones::new());
     }
@@ -39,6 +56,11 @@ pub struct Pheromones {
 fn pheronone_decay(mut pheronones: ResMut<Pheromones>) {
     pheronones.to_food.decay_signals();
     pheronones.to_home.decay_signals();
+}
+
+fn clear_zero_signals(mut pheromones: ResMut<Pheromones>) {
+    pheromones.to_food.drop_zero_signals();
+    pheromones.to_home.drop_zero_signals();
 }
 
 fn update_kd_tree(mut pheromones: ResMut<Pheromones>) {
@@ -65,10 +87,20 @@ impl Pheromones {
     }
 }
 
-fn setup(_commands: Commands) {
-    // commands.spawn((SpriteBundle {
-    //     transform: Transform::from_xyz(0.0, 0.0, 0.0)
-    //         .with_scale(Vec3::splat(PH_UNIT_GRID_SIZE as f32)),
-    //     ..Default::default()
-    // },));
+fn setup(mut commands: Commands) {
+    commands.spawn((
+        SpriteBundle {
+            transform: Transform::from_xyz(0.0, 0.0, 0.0)
+                .with_scale(Vec3::splat(PH_UNIT_GRID_SIZE as f32)),
+            ..Default::default()
+        },
+        PheromoneImageRender,
+    ));
+}
+
+fn pheromone_image_update(
+    mut textures: ResMut<Assets<Image>>,
+    pheromone: Res<Pheromones>,
+    image_handle_query: Query<&mut Handle<Image>, With<PheromoneImageRender>>,
+) {
 }
