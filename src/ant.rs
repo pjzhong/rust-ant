@@ -64,7 +64,7 @@ impl Plugin for AntPlugin {
 }
 
 fn setup(mut commands: Commands, assert_server: Res<AssetServer>) {
-    for _ in 0..NUM_ANTS {
+    for _ in 0..1 {
         commands.spawn((
             SpriteBundle {
                 texture: assert_server.load(SPRITE_ANT),

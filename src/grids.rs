@@ -1,11 +1,12 @@
-use std::collections::HashMap;
+use std::{cmp, collections::HashMap};
 
 use bevy::prelude::{Vec2, Vec3};
 use kd_tree::KdTree;
 
 use crate::{
-    utils::calc_weighted_midpoint, H, MAX_PHEROMONE_STRENGTH, PH_CACHE_GRID_SIZE, PH_DECAY_RATE,
-    PH_UNIT_GRID_SIZE, W,
+    utils::{calc_weighted_midpoint, window_to_grid},
+    H, MAX_PHEROMONE_STRENGTH, PH_CACHE_GRID_SIZE, PH_DECAY_RATE, PH_GRID_OPACITY,
+    PH_GRID_VIZ_MIN_STRENGTH, PH_UNIT_GRID_SIZE, W,
 };
 
 pub struct WorldGrid {
@@ -110,6 +111,10 @@ impl WorldGrid {
     pub fn drop_zero_signals(&mut self) {
         self.signals.drop_zero_values();
     }
+
+    pub fn get_signals(&self) -> &HashMap<(i32, i32), f32> {
+        self.signals.get_values()
+    }
 }
 
 pub struct DecayGrid {
@@ -152,5 +157,38 @@ impl DecayGrid {
 
     pub fn get_values(&self) -> &HashMap<(i32, i32), f32> {
         &self.values
+    }
+}
+
+pub fn add_map_to_grid_img(
+    map: &HashMap<(i32, i32), f32>,
+    color: &(u8, u8, u8),
+    img_bytes: &mut Vec<u8>,
+    use_grid_pos: bool,
+) {
+    let w = W as usize / PH_UNIT_GRID_SIZE as usize;
+    for (k, v) in map.iter() {
+        let (x, y) = if use_grid_pos {
+            let (x, y) = (
+                k.0 * PH_UNIT_GRID_SIZE as i32,
+                k.1 * PH_UNIT_GRID_SIZE as i32,
+            );
+            window_to_grid(x, y)
+        } else {
+            (k.0, k.1)
+        };
+
+        let idx = y * w as i32 + x;
+        let strength = cmp::min((*v as u32).saturating_mul(5), u8::MAX.into()) as u8;
+
+        let idx = (idx as usize).saturating_mul(4);
+        if idx.saturating_add(3) >= img_bytes.len() || strength < PH_GRID_VIZ_MIN_STRENGTH {
+            continue;
+        }
+
+        img_bytes[idx + 3] = cmp::min(img_bytes[idx + 3].saturating_add(strength), PH_GRID_OPACITY);
+        img_bytes[idx] = color.0;
+        img_bytes[idx + 1] = color.1;
+        img_bytes[idx + 2] = color.2;
     }
 }

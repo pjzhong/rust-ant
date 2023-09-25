@@ -5,13 +5,15 @@ use bevy::{
         Assets, Commands, Component, Handle, Image, IntoSystemConfigs, Plugin, Query, Res, ResMut,
         Resource, Startup, Transform, Update, Vec3, With,
     },
+    render::render_resource::{Extent3d, TextureDimension, TextureFormat},
     sprite::SpriteBundle,
     time::common_conditions::on_timer,
 };
 
 use crate::{
-    grids::WorldGrid, FOOD_LOCATION, HOME_LOCATION, PH_COLOR_TO_FOOD, PH_COLOR_TO_HOME,
-    PH_DECAY_INTERVAL, PH_IMG_UPDATE_SEC, PH_KD_TREE_UPDATE_INTERVAL,
+    grids::{add_map_to_grid_img, WorldGrid},
+    FOOD_LOCATION, H, HOME_LOCATION, PH_COLOR_TO_FOOD, PH_COLOR_TO_HOME, PH_DECAY_INTERVAL,
+    PH_IMG_UPDATE_SEC, PH_KD_TREE_UPDATE_INTERVAL, W,
 };
 
 use crate::PH_UNIT_GRID_SIZE;
@@ -101,6 +103,38 @@ fn setup(mut commands: Commands) {
 fn pheromone_image_update(
     mut textures: ResMut<Assets<Image>>,
     pheromone: Res<Pheromones>,
-    image_handle_query: Query<&mut Handle<Image>, With<PheromoneImageRender>>,
+    mut image_handle_query: Query<&mut Handle<Image>, With<PheromoneImageRender>>,
 ) {
+    let mut img_handle = image_handle_query.single_mut();
+    let (w, h) = (
+        W as usize / PH_UNIT_GRID_SIZE as usize,
+        H as usize / PH_UNIT_GRID_SIZE as usize,
+    );
+    let mut bytes = vec![0; w * h * 4];
+
+    add_map_to_grid_img(
+        pheromone.to_home.get_signals(),
+        &pheromone.to_home.color,
+        &mut bytes,
+        true,
+    );
+
+    add_map_to_grid_img(
+        pheromone.to_food.get_signals(),
+        &pheromone.to_food.color,
+        &mut bytes,
+        true,
+    );
+
+    let pheronone_map = Image::new(
+        Extent3d {
+            width: w as u32,
+            height: h as u32,
+            ..Default::default()
+        },
+        TextureDimension::D2,
+        bytes,
+        TextureFormat::Rgba8Unorm,
+    );
+    *img_handle = textures.add(pheronone_map);
 }

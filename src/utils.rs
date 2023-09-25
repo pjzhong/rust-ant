@@ -6,6 +6,8 @@ use bevy::{
 };
 use rand::{thread_rng, Rng};
 
+use crate::{H, PH_UNIT_GRID_SIZE, W};
+
 pub fn get_rand_unit_vec2() -> Vec2 {
     let rand_vec3 = get_rand_unit_vec3();
     vec2(rand_vec3.x, rand_vec3.y)
@@ -28,6 +30,14 @@ pub fn calc_rotatio_angle(v1: &Vec3, v2: &Vec3) -> f32 {
     } else {
         angle_rad
     }
+}
+
+/// Convert from center to top left co-ords
+pub fn window_to_grid(x: i32, y: i32) -> (i32, i32) {
+    let (tx, ty) = (x + (W as usize / 2) as i32, (H as usize / 2) as i32 - y);
+    let (tx, ty) = (tx / PH_UNIT_GRID_SIZE as i32, ty / PH_UNIT_GRID_SIZE as i32);
+
+    (tx, ty)
 }
 
 /// 转向力
