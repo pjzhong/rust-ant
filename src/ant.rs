@@ -48,7 +48,7 @@ impl Plugin for AntPlugin {
             .add_systems(Update, update_position.after(check_wall_collision))
             .add_systems(
                 Update,
-                drop_pheronone.run_if(on_timer(Duration::from_secs_f32(ANT_PH_DROP_INTERVAL))),
+                drop_pheromone.run_if(on_timer(Duration::from_secs_f32(ANT_PH_DROP_INTERVAL))),
             )
             .add_systems(
                 Update,
@@ -64,7 +64,7 @@ impl Plugin for AntPlugin {
 }
 
 fn setup(mut commands: Commands, assert_server: Res<AssetServer>) {
-    for _ in 0..1 {
+    for _ in 0..NUM_ANTS {
         commands.spawn((
             SpriteBundle {
                 texture: assert_server.load(SPRITE_ANT),
@@ -114,8 +114,11 @@ fn periodic_directio_update(
     mut pheromones: ResMut<Pheromones>,
     scan_radius: Res<AntScanRadius>,
 ) {
+    pheromones.clear_steer_cache();
+
     for (mut acceleration, transform, current_task, velocity) in ant_query.iter_mut() {
         let cur_pos = transform.translation;
+
         let target = match current_task.0 {
             AntTask::FindFood => {
                 let dist_to_food = transform.translation.distance_squared(vec3(
@@ -143,7 +146,7 @@ fn periodic_directio_update(
             }
         };
 
-        let _target = match target {
+        let target = match target {
             None => match current_task.0 {
                 AntTask::FindFood => pheromones.to_food.get_steer_target(&cur_pos, scan_radius.0),
                 AntTask::FindHome => pheromones.to_home.get_steer_target(&cur_pos, scan_radius.0),
@@ -216,12 +219,12 @@ fn check_home_food_collisions(
     }
 }
 
-fn drop_pheronone(
-    mut ant_query: Query<(&Transform, &CurrentTask, &PhStrength), With<Ant>>,
+fn drop_pheromone(
+    ant_query: Query<(&Transform, &CurrentTask, &PhStrength), With<Ant>>,
     mut pheronones: ResMut<Pheromones>,
 ) {
     //1.蚂蚁经过，留下信号
-    for (transform, ant_task, ph_strength) in ant_query.iter_mut() {
+    for (transform, ant_task, ph_strength) in ant_query.iter() {
         let x = transform.translation.x as i32;
         let y = transform.translation.y as i32;
         match ant_task.0 {

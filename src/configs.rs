@@ -10,7 +10,7 @@ pub const HOME_SPRITE_SCALE: f32 = 2.5;
 pub const HOME_RADIUS: f32 = 30.0;
 
 // Food
-pub const FOOD_LOCATION: (f32, f32) = (-400.0, 300.0);
+pub const FOOD_LOCATION: (f32, f32) = (-750.0, 400.0);
 //pub const FOOD_LOCATION: (f32, f32) = (-379.5, 00.0);
 pub const FOOD_PICKUP_RADIUS: f32 = 30.0;
 pub const FOOD_SPRITE_SCALE: f32 = 2.0;

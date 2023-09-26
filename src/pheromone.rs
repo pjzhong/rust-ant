@@ -29,7 +29,7 @@ impl Plugin for PheromonePlugin {
         app.add_systems(Startup, setup)
             .add_systems(
                 Update,
-                pheronone_decay.run_if(on_timer(Duration::from_secs_f32(PH_DECAY_INTERVAL))),
+                pheromone_decay.run_if(on_timer(Duration::from_secs_f32(PH_DECAY_INTERVAL))),
             )
             .add_systems(
                 Update,
@@ -55,7 +55,7 @@ pub struct Pheromones {
     pub to_food: WorldGrid,
 }
 
-fn pheronone_decay(mut pheronones: ResMut<Pheromones>) {
+fn pheromone_decay(mut pheronones: ResMut<Pheromones>) {
     pheronones.to_food.decay_signals();
     pheronones.to_home.decay_signals();
 }
@@ -86,6 +86,11 @@ impl Pheromones {
     fn update_tree(&mut self) {
         self.to_food.update_tree();
         self.to_home.update_tree();
+    }
+
+    pub fn clear_steer_cache(&mut self) {
+        self.to_food.clear_steer_cache();
+        self.to_home.clear_steer_cache();
     }
 }
 

@@ -27,7 +27,15 @@ impl WorldGrid {
     }
 
     pub fn emit_signal(&mut self, key: &(i32, i32), value: f32) {
+        let key = &self.get_ph_key(key.0, key.1);
+        if key.0 == 0 && key.1 == 0 {
+            return;
+        }
         self.signals.add_value(key, value, value * 0.25)
+    }
+
+    fn get_ph_key(&self, x: i32, y: i32) -> (i32, i32) {
+        (x / PH_UNIT_GRID_SIZE as i32, y / PH_UNIT_GRID_SIZE as i32)
     }
 
     ///获取转向目标
@@ -83,10 +91,6 @@ impl WorldGrid {
         }
     }
 
-    fn get_ph_key(&self, x: i32, y: i32) -> (i32, i32) {
-        (x / PH_UNIT_GRID_SIZE as i32, y / PH_UNIT_GRID_SIZE as i32)
-    }
-
     pub fn update_tree(&mut self) {
         if self.signals.values.is_empty() {
             self.tree = None;
@@ -114,6 +118,13 @@ impl WorldGrid {
 
     pub fn get_signals(&self) -> &HashMap<(i32, i32), f32> {
         self.signals.get_values()
+    }
+
+    pub fn clear_steer_cache(&mut self) -> u32 {
+        let ret = self.steer_cache.len();
+        self.steer_cache.clear();
+
+        ret as u32
     }
 }
 
