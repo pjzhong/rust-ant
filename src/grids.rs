@@ -92,20 +92,16 @@ impl WorldGrid {
     }
 
     pub fn update_tree(&mut self) {
-        if self.signals.values.is_empty() {
-            self.tree = None;
-        } else {
-            let mut pts = Vec::new();
-            for (k, &v) in self.signals.values.iter() {
-                if v <= 0.0 {
-                    continue;
-                }
-
-                let (x, y) = *k;
-                pts.push([x as f32, y as f32]);
+        let mut pts = Vec::new();
+        for (k, &v) in self.signals.values.iter() {
+            if v <= 0.0 {
+                continue;
             }
-            self.tree = Some(KdTree::build_by_ordered_float(pts));
+
+            let (x, y) = *k;
+            pts.push([x as f32, y as f32]);
         }
+        self.tree = Some(KdTree::build_by_ordered_float(pts));
     }
 
     pub fn decay_signals(&mut self) {

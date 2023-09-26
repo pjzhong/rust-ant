@@ -44,7 +44,7 @@ pub fn window_to_grid(x: i32, y: i32) -> (i32, i32) {
 pub fn get_steering_force(target: Vec2, current: Vec2, velocity: Vec2) -> Vec2 {
     let desired = target - current;
     let steering = desired - velocity;
-    steering * 0.5
+    steering * 0.05
 }
 
 /// 计算中值
