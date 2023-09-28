@@ -56,7 +56,13 @@ impl Plugin for AntPlugin {
             )
             .add_systems(
                 Update,
-                periodic_directio_update.run_if(on_timer(Duration::from_secs_f32(
+                decay_ph_stength.run_if(on_timer(Duration::from_secs_f32(
+                    ANT_PH_STRENGTH_DECAY_INTERVAL,
+                ))),
+            )
+            .add_systems(
+                Update,
+                periodic_direction_update.run_if(on_timer(Duration::from_secs_f32(
                     ANT_DIRECTION_UPDATE_INTERVAL,
                 ))),
             );
@@ -85,6 +91,12 @@ fn setup(mut commands: Commands, assert_server: Res<AssetServer>) {
     }
 }
 
+fn decay_ph_stength(mut ant_query: Query<&mut PhStrength, With<Ant>>) {
+    for mut ph_strength in ant_query.iter_mut() {
+        ph_strength.0 = f32::max(ph_strength.0 - ANT_PH_STRENGTH_DECAY_RATE, 0.0);
+    }
+}
+
 fn check_wall_collision(
     mut ant_query: Query<(&Transform, &Velocity, &mut Acceleration), With<Ant>>,
     window: Query<&Window>,
@@ -109,7 +121,7 @@ fn check_wall_collision(
     }
 }
 
-fn periodic_directio_update(
+fn periodic_direction_update(
     mut ant_query: Query<(&mut Acceleration, &Transform, &CurrentTask, &Velocity), With<Ant>>,
     mut pheromones: ResMut<Pheromones>,
     scan_radius: Res<AntScanRadius>,
@@ -175,13 +187,14 @@ fn check_home_food_collisions(
             &mut Sprite,
             &mut Velocity,
             &mut CurrentTask,
+            &mut PhStrength,
             &mut Handle<Image>,
         ),
         With<Ant>,
     >,
     assert_server: Res<AssetServer>,
 ) {
-    for (transform, mut sprite, mut velocity, mut ant_task, mut image_handle) in
+    for (transform, mut sprite, mut velocity, mut ant_task, mut ph_strength, mut image_handle) in
         ant_query.iter_mut()
     {
         let dist_to_home =
@@ -196,6 +209,7 @@ fn check_home_food_collisions(
                 }
             };
             ant_task.0 = AntTask::FindFood;
+            ph_strength.0 = ANT_INITIAL_PH_STRENGTH;
             *image_handle = assert_server.load(SPRITE_ANT);
             sprite.color = Color::rgb(1.0, 1.0, 2.5);
         }
@@ -213,6 +227,7 @@ fn check_home_food_collisions(
             };
 
             ant_task.0 = AntTask::FindHome;
+            ph_strength.0 = ANT_INITIAL_PH_STRENGTH;
             *image_handle = assert_server.load(SPRITE_ANT_WITH_FOOD);
             sprite.color = Color::rgb(1.0, 2.0, 1.0);
         }
@@ -227,6 +242,7 @@ fn drop_pheromone(
     for (transform, ant_task, ph_strength) in ant_query.iter() {
         let x = transform.translation.x as i32;
         let y = transform.translation.y as i32;
+
         match ant_task.0 {
             AntTask::FindFood => pheronones.to_home.emit_signal(&(x, y), ph_strength.0),
             AntTask::FindHome => pheronones.to_food.emit_signal(&(x, y), ph_strength.0),
