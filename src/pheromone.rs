@@ -112,8 +112,8 @@ fn pheromone_image_update(
 ) {
     let mut img_handle = image_handle_query.single_mut();
     let (w, h) = (
-        W as usize / PH_UNIT_GRID_SIZE as usize,
-        H as usize / PH_UNIT_GRID_SIZE as usize,
+        W as usize / PH_UNIT_GRID_SIZE,
+        H as usize / PH_UNIT_GRID_SIZE,
     );
     let mut bytes = vec![0; w * h * 4];
 

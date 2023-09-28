@@ -65,6 +65,10 @@ impl Plugin for AntPlugin {
                 periodic_direction_update.run_if(on_timer(Duration::from_secs_f32(
                     ANT_DIRECTION_UPDATE_INTERVAL,
                 ))),
+            )
+            .add_systems(
+                Update,
+                update_scan_radius.run_if(on_timer(Duration::from_secs_f32(1.0))),
             );
     }
 }
@@ -88,12 +92,6 @@ fn setup(mut commands: Commands, assert_server: Res<AssetServer>) {
             Acceleration(Vec2::ZERO),
             PhStrength(ANT_INITIAL_PH_STRENGTH),
         ));
-    }
-}
-
-fn decay_ph_stength(mut ant_query: Query<&mut PhStrength, With<Ant>>) {
-    for mut ph_strength in ant_query.iter_mut() {
-        ph_strength.0 = f32::max(ph_strength.0 - ANT_PH_STRENGTH_DECAY_RATE, 0.0);
     }
 }
 
@@ -248,6 +246,20 @@ fn drop_pheromone(
             AntTask::FindHome => pheronones.to_food.emit_signal(&(x, y), ph_strength.0),
         }
     }
+}
+
+fn decay_ph_stength(mut ant_query: Query<&mut PhStrength, With<Ant>>) {
+    for mut ph_strength in ant_query.iter_mut() {
+        ph_strength.0 = f32::max(ph_strength.0 - ANT_PH_STRENGTH_DECAY_RATE, 0.0);
+    }
+}
+
+fn update_scan_radius(mut scan_radius: ResMut<AntScanRadius>) {
+    if scan_radius.0 > INITIAL_ANT_PH_SCAN_RADIUS * ANT_PH_SCAN_RADIUS_SCALE {
+        return;
+    }
+
+    scan_radius.0 += ANT_PH_SCAN_RADIUS_INCREMENT;
 }
 
 fn update_position(

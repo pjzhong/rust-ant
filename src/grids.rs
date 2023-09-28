@@ -173,7 +173,7 @@ pub fn add_map_to_grid_img(
     img_bytes: &mut Vec<u8>,
     use_grid_pos: bool,
 ) {
-    let w = W as usize / PH_UNIT_GRID_SIZE as usize;
+    let w = W as usize / PH_UNIT_GRID_SIZE;
     for (k, v) in map.iter() {
         let (x, y) = if use_grid_pos {
             let (x, y) = (
