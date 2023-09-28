@@ -22,14 +22,14 @@ pub const SPRITE_ANT_COLONY: &str = "nest.png";
 pub const SPRITE_FOOD: &str = "food.png";
 
 // Ants
-pub const NUM_ANTS: u32 = 5000;
+pub const NUM_ANTS: u32 = 1000;
 pub const ANT_SPEED: f32 = 1.5;
 pub const ANT_DIRECTION_RANDOMNESS_DEG: f32 = 300.0;
 pub const ANT_DIRECTION_UPDATE_INTERVAL: f32 = 0.5;
 pub const ANT_SPRITE_SCALE: f32 = 0.3;
 pub const ANT_Z_INDEX: f32 = 3.0;
 pub const ANT_INITIAL_PH_STRENGTH: f32 = 32.0;
-pub const ANT_PH_STRENGTH_DECAY_RATE: f32 = 0.7;
+pub const ANT_PH_STRENGTH_DECAY_RATE: f32 = 1.2;
 pub const ANT_PH_STRENGTH_DECAY_INTERVAL: f32 = 0.5;
 pub const ANT_PH_DROP_INTERVAL: f32 = 0.7;
 pub const INITIAL_ANT_PH_SCAN_RADIUS: f32 = 15.0;
