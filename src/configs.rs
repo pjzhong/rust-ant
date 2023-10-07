@@ -51,3 +51,10 @@ pub const PH_GRID_OPACITY: u8 = 255;
 pub const PH_COLOR_TO_FOOD: (u8, u8, u8) = (2, 79, 2);
 pub const PH_COLOR_TO_HOME: (u8, u8, u8) = (200, 81, 112);
 pub const PH_CACHE_GRID_SIZE: i32 = 10;
+
+// Path Viz
+pub const VIZ_COLOR_TO_HOME: (u8, u8, u8) = (17, 106, 123);
+pub const VIZ_COLOR_TO_FOOD: (u8, u8, u8) = (92, 46, 126);
+pub const VIZ_DECAY_RATE: f32 = 0.3;
+pub const VIZ_COLOR_STRENGTH: f32 = 8.0;
+pub const VIZ_MAX_COLOR_STRENGTH: f32 = 50.0;
