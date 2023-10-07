@@ -22,7 +22,7 @@ pub const SPRITE_ANT_COLONY: &str = "nest.png";
 pub const SPRITE_FOOD: &str = "food.png";
 
 // Ants
-pub const NUM_ANTS: u32 = 1000;
+pub const NUM_ANTS: u32 = 5000;
 pub const ANT_SPEED: f32 = 1.5;
 pub const ANT_DIRECTION_RANDOMNESS_DEG: f32 = 300.0;
 pub const ANT_DIRECTION_UPDATE_INTERVAL: f32 = 0.5;

@@ -4,8 +4,8 @@ use bevy::{
     prelude::*,
 };
 
-use ants::{ant::AntPlugin, pheromone::PheromonePlugin, *};
-use bevy_pancam::PanCamPlugin;
+use ants::{ant::AntPlugin, pathviz::PathVizPlugin, pheromone::PheromonePlugin, *};
+use bevy_pancam::{PanCam, PanCamPlugin};
 
 #[derive(Component)]
 struct FollowCamera;
@@ -31,6 +31,7 @@ fn main() {
         .add_plugins(FrameTimeDiagnosticsPlugin)
         .add_plugins(PanCamPlugin)
         .add_plugins(PheromonePlugin)
+        .add_plugins(PathVizPlugin)
         .insert_resource(ClearColor(Color::rgba_u8(
             BG_COLOR.0, BG_COLOR.1, BG_COLOR.2, 0,
         )))
@@ -41,18 +42,20 @@ fn main() {
 }
 
 fn setup(mut commands: Commands, assert_server: Res<AssetServer>) {
-    commands.spawn((
-        Camera2dBundle {
-            camera: Camera {
-                hdr: true,
+    commands
+        .spawn((
+            Camera2dBundle {
+                camera: Camera {
+                    hdr: true,
+                    ..default()
+                },
+                tonemapping: Tonemapping::TonyMcMapface,
                 ..default()
             },
-            tonemapping: Tonemapping::TonyMcMapface,
-            ..default()
-        },
-        FollowCamera,
-        BloomSettings::default(),
-    ));
+            FollowCamera,
+            BloomSettings::default(),
+        ))
+        .insert(PanCam::default());
 
     commands.spawn(SpriteBundle {
         texture: assert_server.load(SPRITE_ANT_COLONY),
